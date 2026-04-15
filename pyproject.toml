@@ -24,7 +24,7 @@ sumo = [
 ]
 
 [tool.setuptools]
-packages = ["agents", "envs", "training", "utils"]
+packages = []
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
