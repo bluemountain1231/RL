@@ -4,6 +4,7 @@ from agents.ddpg import DDPGAgent
 from agents.dqn import DQNAgent
 
 from training.baseline import FixedTimeBaselinePolicy
+from utils.metrics import EpisodeMetrics
 
 
 def test_fixed_time_baseline_cycles_green_duration_values():
@@ -11,6 +12,26 @@ def test_fixed_time_baseline_cycles_green_duration_values():
     assert policy.act(step_index=0) == 20
     assert policy.act(step_index=1) == 25
     assert policy.act(step_index=2) == 20
+
+
+def test_fixed_time_baseline_rejects_empty_schedule():
+    try:
+        FixedTimeBaselinePolicy(schedule=[])
+        assert False, "Expected ValueError for empty schedule"
+    except ValueError as exc:
+        assert "empty" in str(exc).lower()
+
+
+def test_episode_metrics_summary_returns_zeroes_for_empty_episode():
+    metrics = EpisodeMetrics()
+
+    assert metrics.summary() == {
+        "episode_reward": 0.0,
+        "average_waiting_time": 0.0,
+        "average_queue_length": 0.0,
+        "throughput": 0.0,
+        "average_speed": 0.0,
+    }
 
 
 def test_dqn_agent_returns_valid_action_index():

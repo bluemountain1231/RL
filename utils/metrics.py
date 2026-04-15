@@ -19,6 +19,15 @@ class EpisodeMetrics:
         self.speeds.append(speed)
 
     def summary(self) -> dict[str, float]:
+        if not self.rewards:
+            return {
+                "episode_reward": 0.0,
+                "average_waiting_time": 0.0,
+                "average_queue_length": 0.0,
+                "throughput": 0.0,
+                "average_speed": 0.0,
+            }
+
         return {
             "episode_reward": sum(self.rewards),
             "average_waiting_time": sum(self.waiting_times) / len(self.waiting_times),
