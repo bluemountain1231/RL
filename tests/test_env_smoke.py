@@ -2,6 +2,8 @@ import pytest
 
 from agents.dqn import DQNAgent
 from envs.sumo_env import TrafficSignalEnv
+from training.evaluate import run_evaluation_episode
+from training.baseline import FixedTimeBaselinePolicy
 from training.train import run_training_episode
 
 
@@ -139,6 +141,36 @@ def test_run_training_episode_returns_summary_for_dqn():
     )
 
     summary = run_training_episode(env=env, agent=agent, action_type="dqn", max_steps=5)
+
+    assert set(summary.keys()) == {
+        "episode_reward",
+        "average_waiting_time",
+        "average_queue_length",
+        "throughput",
+        "average_speed",
+    }
+
+
+def test_run_evaluation_episode_supports_baseline_policy():
+    env = TrafficSignalEnv(
+        scenario_config={
+            "incoming_lanes": ["north_in_0", "south_in_0", "east_in_0", "west_in_0"],
+            "phase_count": 2,
+            "min_green": 10,
+            "max_green": 60,
+            "action_delta_seconds": 5,
+        },
+        reward_config={
+            "waiting_weight": 1.0,
+            "queue_weight": 0.5,
+            "throughput_weight": 0.2,
+            "fairness_weight": 0.1,
+        },
+        sumo_enabled=False,
+    )
+    policy = FixedTimeBaselinePolicy(schedule=[20, 25])
+
+    summary = run_evaluation_episode(env=env, policy=policy, action_type="baseline", max_steps=5)
 
     assert set(summary.keys()) == {
         "episode_reward",
