@@ -40,8 +40,10 @@ class TrafficSignalEnv:
     def step(self, action: int | float, action_type: str = "dqn") -> tuple[np.ndarray, float, bool, dict]:
         if action_type == "dqn":
             delta = decode_dqn_action(int(action), self.scenario_config["action_delta_seconds"])
-        else:
+        elif action_type == "ddpg":
             delta = decode_ddpg_action(float(action), self.scenario_config["action_delta_seconds"])
+        else:
+            raise ValueError(f"Unsupported action_type: {action_type}")
 
         self.current_green = apply_green_constraints(
             proposed_green=self.current_green + delta,
@@ -63,7 +65,7 @@ class TrafficSignalEnv:
             throughput_weight=self.reward_config["throughput_weight"],
             fairness_weight=self.reward_config["fairness_weight"],
         )
-        done = self.simulation_step >= 20
+        done = self.sumo_enabled and self.simulation_step >= 20
         info = {
             "average_waiting_time": totals["total_waiting"] / len(self.incoming_lanes),
             "average_queue_length": totals["total_queue"] / len(self.incoming_lanes),
