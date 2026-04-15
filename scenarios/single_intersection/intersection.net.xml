@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<net version="1.16" junctionCornerDetail="5" limitTurnSpeed="5.50">
+    <location netOffset="0.00,0.00" convBoundary="-100.00,-100.00,100.00,100.00" origBoundary="-10000000000.00,-10000000000.00,10000000000.00,10000000000.00" projParameter="!"/>
+    <edge id="north_in" from="north" to="junction_0" priority="-1">
+        <lane id="north_in_0" index="0" speed="13.89" length="90.00" shape="0.00,100.00 0.00,10.00"/>
+    </edge>
+    <edge id="south_in" from="south" to="junction_0" priority="-1">
+        <lane id="south_in_0" index="0" speed="13.89" length="90.00" shape="0.00,-100.00 0.00,-10.00"/>
+    </edge>
+    <edge id="east_in" from="east" to="junction_0" priority="-1">
+        <lane id="east_in_0" index="0" speed="13.89" length="90.00" shape="100.00,0.00 10.00,0.00"/>
+    </edge>
+    <edge id="west_in" from="west" to="junction_0" priority="-1">
+        <lane id="west_in_0" index="0" speed="13.89" length="90.00" shape="-100.00,0.00 -10.00,0.00"/>
+    </edge>
+    <edge id="north_out" from="junction_0" to="north_exit" priority="-1">
+        <lane id="north_out_0" index="0" speed="13.89" length="90.00" shape="0.00,10.00 0.00,100.00"/>
+    </edge>
+    <edge id="south_out" from="junction_0" to="south_exit" priority="-1">
+        <lane id="south_out_0" index="0" speed="13.89" length="90.00" shape="0.00,-10.00 0.00,-100.00"/>
+    </edge>
+    <edge id="east_out" from="junction_0" to="east_exit" priority="-1">
+        <lane id="east_out_0" index="0" speed="13.89" length="90.00" shape="10.00,0.00 100.00,0.00"/>
+    </edge>
+    <edge id="west_out" from="junction_0" to="west_exit" priority="-1">
+        <lane id="west_out_0" index="0" speed="13.89" length="90.00" shape="-10.00,0.00 -100.00,0.00"/>
+    </edge>
+    <tlLogic id="junction_0" type="static" programID="0" offset="0">
+        <phase duration="20" state="GrGr"/>
+        <phase duration="3" state="yryr"/>
+        <phase duration="20" state="rGrG"/>
+        <phase duration="3" state="ryry"/>
+    </tlLogic>
+    <junction id="junction_0" type="traffic_light" x="0.00" y="0.00" incLanes="north_in_0 south_in_0 east_in_0 west_in_0" intLanes="" shape="-5.00,5.00 5.00,5.00 5.00,-5.00 -5.00,-5.00"/>
+    <junction id="north" type="priority" x="0.00" y="100.00" incLanes="" intLanes="" shape="0.00,100.00"/>
+    <junction id="south" type="priority" x="0.00" y="-100.00" incLanes="" intLanes="" shape="0.00,-100.00"/>
+    <junction id="east" type="priority" x="100.00" y="0.00" incLanes="" intLanes="" shape="100.00,0.00"/>
+    <junction id="west" type="priority" x="-100.00" y="0.00" incLanes="" intLanes="" shape="-100.00,0.00"/>
+    <junction id="north_exit" type="priority" x="0.00" y="110.00" incLanes="north_out_0" intLanes="" shape="0.00,110.00"/>
+    <junction id="south_exit" type="priority" x="0.00" y="-110.00" incLanes="south_out_0" intLanes="" shape="0.00,-110.00"/>
+    <junction id="east_exit" type="priority" x="110.00" y="0.00" incLanes="east_out_0" intLanes="" shape="110.00,0.00"/>
+    <junction id="west_exit" type="priority" x="-110.00" y="0.00" incLanes="west_out_0" intLanes="" shape="-110.00,0.00"/>
+</net>
