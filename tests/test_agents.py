@@ -3,6 +3,15 @@ import numpy as np
 from agents.ddpg import DDPGAgent
 from agents.dqn import DQNAgent
 
+from training.baseline import FixedTimeBaselinePolicy
+
+
+def test_fixed_time_baseline_cycles_green_duration_values():
+    policy = FixedTimeBaselinePolicy(schedule=[20, 25])
+    assert policy.act(step_index=0) == 20
+    assert policy.act(step_index=1) == 25
+    assert policy.act(step_index=2) == 20
+
 
 def test_dqn_agent_returns_valid_action_index():
     agent = DQNAgent(
