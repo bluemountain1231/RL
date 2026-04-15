@@ -1,0 +1,14 @@
+name: single_intersection
+sumocfg_path: scenarios/single_intersection/simulation.sumocfg
+traffic_light_id: junction_0
+incoming_lanes:
+  - north_in_0
+  - south_in_0
+  - east_in_0
+  - west_in_0
+phase_count: 2
+min_green: 10
+max_green: 60
+yellow_time: 3
+all_red_time: 1
+action_delta_seconds: 5

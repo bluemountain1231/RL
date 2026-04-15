@@ -1,0 +1,11 @@
+seed: 42
+output_dir: results
+scenario: configs/scenario_single_intersection.yaml
+reward: configs/reward.yaml
+steps_per_action: 5
+max_episode_steps: 360
+train_episodes: 50
+eval_episodes: 5
+checkpoint_every: 10
+device: cpu
+agent: dqn

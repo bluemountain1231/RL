@@ -1,0 +1,4 @@
+waiting_weight: 1.0
+queue_weight: 0.5
+throughput_weight: 0.2
+fairness_weight: 0.1
