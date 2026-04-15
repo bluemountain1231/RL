@@ -1,9 +1,14 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
 import numpy as np
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 from agents.ddpg import DDPGAgent
 from agents.dqn import DQNAgent
@@ -49,16 +54,27 @@ def build_agent(agent_name: str, state_dim: int, config: dict):
     raise ValueError(f"Unsupported agent: {agent_name}")
 
 
+def resolve_config_path(config_path: str, reference_path: Path) -> str:
+    path = Path(config_path)
+    if path.is_absolute():
+        return str(path)
+    project_candidate = (PROJECT_ROOT / path).resolve()
+    if project_candidate.exists():
+        return str(project_candidate)
+    return str((reference_path.parent / path).resolve())
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--base-config", default="configs/base.yaml")
     parser.add_argument("--agent-config", required=True)
     args = parser.parse_args()
 
-    base_config = load_yaml(args.base_config)
-    agent_config = load_yaml(args.agent_config)
-    scenario_config = load_yaml(base_config["scenario"])
-    reward_config = load_yaml(base_config["reward"])
+    base_config_path = Path(args.base_config).resolve()
+    base_config = load_yaml(str(base_config_path))
+    agent_config = load_yaml(str(Path(args.agent_config).resolve()))
+    scenario_config = load_yaml(resolve_config_path(base_config["scenario"], base_config_path))
+    reward_config = load_yaml(resolve_config_path(base_config["reward"], base_config_path))
     set_seed(base_config["seed"])
 
     env = TrafficSignalEnv(scenario_config=scenario_config, reward_config=reward_config, sumo_enabled=False)

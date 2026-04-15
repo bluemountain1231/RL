@@ -37,13 +37,16 @@ class DDPGAgent:
         self.loss_fn = nn.MSELoss()
         self.buffer = ReplayBuffer(buffer_capacity)
 
-    def act(self, state: np.ndarray, eval_mode: bool = False) -> float:
+    def act(self, state: np.ndarray, eval_mode: bool = False) -> float | np.ndarray:
         state_tensor = torch.as_tensor(state, dtype=torch.float32).unsqueeze(0)
         with torch.no_grad():
-            action = self.actor(state_tensor).squeeze(0).cpu().numpy()[0]
+            action = self.actor(state_tensor).squeeze(0).cpu().numpy()
         if not eval_mode:
-            action = action + np.random.normal(0.0, self.noise_std)
-        return float(np.clip(action, -1.0, 1.0))
+            action = action + np.random.normal(0.0, self.noise_std, size=action.shape)
+        clipped = np.clip(action, -1.0, 1.0).astype(np.float32, copy=False)
+        if clipped.shape == (1,):
+            return float(clipped[0])
+        return clipped
 
     def remember(self, transition: tuple) -> None:
         self.buffer.push(*transition)
@@ -55,6 +58,8 @@ class DDPGAgent:
         batch = self.buffer.sample(self.batch_size)
         state = torch.as_tensor(batch["state"], dtype=torch.float32)
         action = torch.as_tensor(batch["action"], dtype=torch.float32)
+        if action.ndim == 1:
+            action = action.unsqueeze(1)
         reward = torch.as_tensor(batch["reward"], dtype=torch.float32).unsqueeze(1)
         next_state = torch.as_tensor(batch["next_state"], dtype=torch.float32)
         done = torch.as_tensor(batch["done"], dtype=torch.float32).unsqueeze(1)
@@ -83,11 +88,23 @@ class DDPGAgent:
             target_param.data.copy_(self.tau * source_param.data + (1.0 - self.tau) * target_param.data)
 
     def save(self, path: str) -> None:
-        torch.save({"actor": self.actor.state_dict(), "critic": self.critic.state_dict()}, path)
+        torch.save(
+            {
+                "actor": self.actor.state_dict(),
+                "critic": self.critic.state_dict(),
+                "target_actor": self.target_actor.state_dict(),
+                "target_critic": self.target_critic.state_dict(),
+                "actor_optimizer": self.actor_optimizer.state_dict(),
+                "critic_optimizer": self.critic_optimizer.state_dict(),
+            },
+            path,
+        )
 
     def load(self, path: str) -> None:
         state_dict = torch.load(path, map_location="cpu")
         self.actor.load_state_dict(state_dict["actor"])
         self.critic.load_state_dict(state_dict["critic"])
-        self.target_actor.load_state_dict(state_dict["actor"])
-        self.target_critic.load_state_dict(state_dict["critic"])
+        self.target_actor.load_state_dict(state_dict["target_actor"])
+        self.target_critic.load_state_dict(state_dict["target_critic"])
+        self.actor_optimizer.load_state_dict(state_dict["actor_optimizer"])
+        self.critic_optimizer.load_state_dict(state_dict["critic_optimizer"])

@@ -80,9 +80,21 @@ class DQNAgent:
         return float(loss.item())
 
     def save(self, path: str) -> None:
-        torch.save(self.online_net.state_dict(), path)
+        torch.save(
+            {
+                "online_net": self.online_net.state_dict(),
+                "target_net": self.target_net.state_dict(),
+                "optimizer": self.optimizer.state_dict(),
+                "epsilon": self.epsilon,
+                "update_steps": self.update_steps,
+            },
+            path,
+        )
 
     def load(self, path: str) -> None:
         state_dict = torch.load(path, map_location="cpu")
-        self.online_net.load_state_dict(state_dict)
-        self.target_net.load_state_dict(state_dict)
+        self.online_net.load_state_dict(state_dict["online_net"])
+        self.target_net.load_state_dict(state_dict["target_net"])
+        self.optimizer.load_state_dict(state_dict["optimizer"])
+        self.epsilon = float(state_dict["epsilon"])
+        self.update_steps = int(state_dict["update_steps"])

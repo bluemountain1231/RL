@@ -2,6 +2,12 @@ from __future__ import annotations
 
 import argparse
 import statistics
+import sys
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 from agents.ddpg import DDPGAgent
 from agents.dqn import DQNAgent
@@ -42,6 +48,16 @@ def aggregate_summaries(summaries: list[dict[str, float]]) -> dict[str, float]:
     return {f"mean_{key}": statistics.mean(summary[key] for summary in summaries) for key in keys}
 
 
+def resolve_config_path(config_path: str, reference_path: Path) -> str:
+    path = Path(config_path)
+    if path.is_absolute():
+        return str(path)
+    project_candidate = (PROJECT_ROOT / path).resolve()
+    if project_candidate.exists():
+        return str(project_candidate)
+    return str((reference_path.parent / path).resolve())
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--base-config", default="configs/base.yaml")
@@ -50,9 +66,10 @@ def main() -> None:
     parser.add_argument("--agent-config", default="")
     args = parser.parse_args()
 
-    base_config = load_yaml(args.base_config)
-    scenario_config = load_yaml(base_config["scenario"])
-    reward_config = load_yaml(base_config["reward"])
+    base_config_path = Path(args.base_config).resolve()
+    base_config = load_yaml(str(base_config_path))
+    scenario_config = load_yaml(resolve_config_path(base_config["scenario"], base_config_path))
+    reward_config = load_yaml(resolve_config_path(base_config["reward"], base_config_path))
     set_seed(base_config["seed"])
     env = TrafficSignalEnv(scenario_config=scenario_config, reward_config=reward_config, sumo_enabled=False)
 
@@ -60,12 +77,12 @@ def main() -> None:
         policy = FixedTimeBaselinePolicy(schedule=[20, 25])
         action_type = "baseline"
     elif args.agent == "dqn":
-        agent_config = load_yaml(args.agent_config)
+        agent_config = load_yaml(str(Path(args.agent_config).resolve()))
         policy = DQNAgent(state_dim=len(env.reset()), action_dim=3, **agent_config)
         policy.load(args.checkpoint)
         action_type = "dqn"
     else:
-        agent_config = load_yaml(args.agent_config)
+        agent_config = load_yaml(str(Path(args.agent_config).resolve()))
         policy = DDPGAgent(state_dim=len(env.reset()), action_dim=1, **agent_config)
         policy.load(args.checkpoint)
         action_type = "ddpg"

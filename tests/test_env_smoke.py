@@ -1,3 +1,7 @@
+import subprocess
+import sys
+from pathlib import Path
+
 import pytest
 
 from agents.dqn import DQNAgent
@@ -149,6 +153,52 @@ def test_run_training_episode_returns_summary_for_dqn():
         "throughput",
         "average_speed",
     }
+
+
+def test_training_entrypoint_runs_with_script_invocation(tmp_path):
+    repo_root = Path(__file__).resolve().parents[1]
+    results_dir = tmp_path / "results"
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(repo_root / "training" / "train.py"),
+            "--base-config",
+            str(repo_root / "configs" / "base.yaml"),
+            "--agent-config",
+            str(repo_root / "configs" / "dqn.yaml"),
+        ],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert (results_dir / "csv" / "train_dqn.csv").exists()
+    assert (results_dir / "plots" / "dqn_reward.png").exists()
+    assert (results_dir / "checkpoints" / "dqn_50.pt").exists()
+
+
+def test_evaluation_entrypoint_runs_with_script_invocation(tmp_path):
+    repo_root = Path(__file__).resolve().parents[1]
+    results_dir = tmp_path / "results"
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(repo_root / "training" / "evaluate.py"),
+            "--base-config",
+            str(repo_root / "configs" / "base.yaml"),
+            "--agent",
+            "baseline",
+        ],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert (results_dir / "csv" / "eval_baseline.csv").exists()
 
 
 def test_run_evaluation_episode_supports_baseline_policy():
