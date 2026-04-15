@@ -12,7 +12,8 @@ def decode_dqn_action(action_index: int, action_delta_seconds: int) -> int:
 
 def decode_ddpg_action(raw_action: float, action_delta_seconds: int) -> int:
     clipped = max(-1.0, min(1.0, float(raw_action)))
-    return int(round(clipped * action_delta_seconds))
+    scaled = clipped * action_delta_seconds
+    return int(scaled + 0.5) if scaled >= 0 else int(scaled - 0.5)
 
 
 def apply_green_constraints(
