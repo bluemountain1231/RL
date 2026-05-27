@@ -111,5 +111,7 @@ settings.json
 
 # output files
 *.csv
+*.png
 /logs
 /wandb
+/outputs
